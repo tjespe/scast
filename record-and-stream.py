@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
-import soco, os, sys, subprocess, socket, http, time, lib
+import soco, os, sys, subprocess, socket, http, time
+
+def clear():
+    os.system("clear")
+
+chars = ["A", "B", "C", "D"]
+s_chars = ["a", "b", "c", "d"]
+def i_to_c(i):
+    return chars[i]
+def c_to_i(c):
+    return (c in chars and chars.index(c)) or (c in s_chars and s_chars.index(c)) or 0
 
 # Record voice
-os.chdir(sys.path[0])
-lib.clear()
+clear()
 rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open("lyd.wav", "w"), stderr=open("/dev/null"))
 input("Press RETURN when you are done recording")
 rec_proc.terminate()
@@ -19,15 +28,16 @@ ip = s.getsockname()[0]
 s.close()
 
 # Play on Sonos zone selected by user
-lib.clear()
+clear()
 print("Hvilken sone vil du spille lyden på?\n")
 zones = []
 for i, zone in enumerate(soco.discover()):
     zones.append(zone)
-    print(lib.i_to_c(i)+":  ", zone.player_name)
-zone = zones[lib.c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
+    print(i_to_c(i)+":  ", zone.player_name)
+zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
 zone.play_uri("http://"+ip+":8316/lyd.wav")
 
 # Wait some seconds and terminate webserver
 time.sleep(2)
 server_proc.terminate()
+os.remove("lyd.wav")
