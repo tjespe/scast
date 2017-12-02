@@ -13,8 +13,10 @@ def c_to_i(c):
 
 # Record voice
 clear()
+start = time.time()
 rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open("lyd.wav", "w"), stderr=open("/dev/null"))
 input("Press RETURN when you are done recording")
+recording_length = time.time() - start
 rec_proc.terminate()
 print("Done!")
 
@@ -38,6 +40,6 @@ zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
 zone.play_uri("http://"+ip+":8316/lyd.wav")
 
 # Wait some seconds and terminate webserver
-time.sleep(2)
+time.sleep(recording_length+2)
 server_proc.terminate()
 os.remove("lyd.wav")
