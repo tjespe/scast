@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import soco, os, sys, subprocess, socket, http, time
+import soco, os, sys, subprocess, socket, http, time, shutil
 
 def clear():
     os.system("clear")
@@ -14,7 +14,13 @@ def c_to_i(c):
 # Record voice
 clear()
 start = time.time()
-rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open(".lyd.wav", "w"), stderr=open("/dev/null"))
+if shutil.which("arecord"):
+    rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open(".lyd.wav", "w"), stderr=open("/dev/null"))
+elif shutil.which("sox"):
+    rec_proc = subprocess.Popen(["sox", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
+else:
+    print("You need to install either arecord or sox to use this program.")
+    quit()
 input("Press RETURN when you are done recording")
 recording_length = time.time() - start
 rec_proc.terminate()
