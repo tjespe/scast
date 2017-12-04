@@ -44,7 +44,7 @@ for i, zone in enumerate(soco.discover()):
     zones.append(zone)
     print(i_to_c(i)+":  ", zone.player_name)
 zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
-zone.play_uri("http://"+ip+":8317/.lyd.wav")
+zone.play_uri("http://"+ip+":8318/.lyd.wav")
 
 # Wait some seconds and terminate webserver
 time.sleep(recording_length+2)
