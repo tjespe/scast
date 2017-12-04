@@ -28,7 +28,7 @@ rec_proc.terminate()
 print("Done!")
 
 # Start webserver
-server_proc = subprocess.Popen(["python3", "-m", "http.server", "8318"], stdout=open("/dev/null"))
+server_proc = subprocess.Popen(["python3", "-m", "http.server", "8318"], stdout=open("/dev/null"), stderr=open("/dev/null"))
 
 # Get local IP of machine
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
