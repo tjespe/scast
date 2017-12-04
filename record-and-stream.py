@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import soco, os, sys, subprocess, socket, http, time, shutil
 
 def clear():
@@ -17,7 +18,7 @@ start = time.time()
 if shutil.which("arecord"):
     rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open(".lyd.wav", "w"), stderr=open("/dev/null"))
 elif shutil.which("sox"):
-    rec_proc = subprocess.Popen(["sox", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
+    rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
 else:
     print("You need to install either arecord or sox to use this program.")
     quit()
@@ -27,7 +28,7 @@ rec_proc.terminate()
 print("Done!")
 
 # Start webserver
-server_proc = subprocess.Popen(["python3", "-m", "http.server", "8316"], stdout=open("/dev/null"))
+server_proc = subprocess.Popen(["python3", "-m", "http.server", "8318"], stdout=open("/dev/null"))
 
 # Get local IP of machine
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -43,7 +44,7 @@ for i, zone in enumerate(soco.discover()):
     zones.append(zone)
     print(i_to_c(i)+":  ", zone.player_name)
 zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
-zone.play_uri("http://"+ip+":8316/.lyd.wav")
+zone.play_uri("http://"+ip+":8317/.lyd.wav")
 
 # Wait some seconds and terminate webserver
 time.sleep(recording_length+2)
