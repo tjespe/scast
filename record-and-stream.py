@@ -5,8 +5,8 @@ import soco, os, sys, subprocess, socket, http, time, shutil
 def clear():
     os.system("clear")
 
-chars = ["A", "B", "C", "D"]
-s_chars = ["a", "b", "c", "d"]
+chars = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+s_chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
 def i_to_c(i):
     return chars[i]
 def c_to_i(c):
@@ -43,6 +43,11 @@ zones = []
 for i, zone in enumerate(soco.discover()):
     zones.append(zone)
     print(i_to_c(i)+":  ", zone.player_name)
+class dummy_zone():
+    def play_uri(a,b):
+        pass
+print(i_to_c(len(zones))+":   Ikke spill av likevel")
+zones.append(dummy_zone())
 zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
 zone.play_uri("http://"+ip+":8318/.lyd.wav")
 
