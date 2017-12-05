@@ -22,7 +22,7 @@ elif shutil.which("sox"):
 else:
     print("You need to install either arecord or sox to use this program.")
     quit()
-input("Press RETURN when you are done recording")
+input("Trykk ENTER når du er ferdig å ta opp lyd")
 recording_length = time.time() - start
 rec_proc.terminate()
 print("Done!")
