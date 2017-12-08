@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import soco, os, sys, subprocess, socket, http, time, shutil
+import soco, os, sys, subprocess, socket, http, time, shutil, string
 
 def clear():
     os.system("clear")
 
-chars = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
-s_chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
 def i_to_c(i):
-    return chars[i]
+    return string.ascii_uppercase[i]
 def c_to_i(c):
-    return (c in chars and chars.index(c)) or (c in s_chars and s_chars.index(c)) or 0
+    return (c in string.ascii_uppercase and string.ascii_uppercase.index(c)) or (c in string.ascii_lowercase and string.ascii_lowercase.index(c)) or 0
 
 # Record voice
 clear()
