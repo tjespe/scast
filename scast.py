@@ -10,9 +10,10 @@ def i_to_c(i):
 def c_to_i(c):
     return (c in string.ascii_uppercase and string.ascii_uppercase.index(c)) or (c in string.ascii_lowercase and string.ascii_lowercase.index(c)) or 0
 
-# Record voice
+# Clear terminal and start clock
 clear()
 start = time.time()
+# Record voice
 if shutil.which("arecord"):
     rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open(".lyd.wav", "w"), stderr=open("/dev/null"))
 elif shutil.which("sox"):
