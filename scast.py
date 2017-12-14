@@ -50,7 +50,7 @@ print(i_to_c(len(zones))+":   Ikke spill av likevel")
 zones.append(dummy_zone())
 zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
 old_vol = zone.volume
-zone.volume = 70
+zone.volume = 85
 zone.play_uri("http://"+ip+":8318/.lyd.wav")
 
 # Wait some seconds and terminate webserver
