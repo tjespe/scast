@@ -47,6 +47,7 @@ class dummy_zone():
         server_proc.terminate()
         os.remove(".lyd.wav")
         quit()
+    volume = 0
 print(i_to_c(len(zones))+":   Ikke spill av likevel")
 zones.append(dummy_zone())
 zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
