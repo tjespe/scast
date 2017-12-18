@@ -63,19 +63,18 @@ zone.volume = 75
 # Wait some seconds and revert state of player into previous state
 time.sleep(recording_length)
 zone.volume = old_vol
-if 'queue_index' in globals():
+try:
+    zone.group.coordinator.play_from_queue(queue_index)
+    zone.group.coordinator.seek(pos)
+except soco.exceptions.SoCoUPnPException:
     try:
-        zone.group.coordinator.play_from_queue(queue_index)
-        zone.group.coordinator.seek(pos)
+        zone.group.coordinator.play_uri(old_uri)
     except soco.exceptions.SoCoUPnPException:
-        try:
-            zone.group.coordinator.play_uri(old_uri)
-        except soco.exceptions.SoCoUPnPException:
-            pass
-    if not was_playing:
-        try:
-            zone.group.coordinator.pause()
-        except soco.exceptions.SoCoUPnPException:
-            pass
+        pass
+if not was_playing:
+    try:
+        zone.group.coordinator.pause()
+    except soco.exceptions.SoCoUPnPException:
+        pass
 server_proc.terminate()
 os.remove(".lyd.wav")
