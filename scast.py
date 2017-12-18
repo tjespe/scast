@@ -16,8 +16,10 @@ start = time.time()
 # Record voice
 if shutil.which("arecord"):
     rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open(".lyd.wav", "w"), stderr=open("/dev/null"))
+    volume = 35
 elif shutil.which("sox"):
     rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
+    volume = 70
 else:
     print("You need to install either arecord or sox to use this program.")
     quit()
@@ -58,7 +60,7 @@ pos = track_info["position"]
 old_uri = track_info["uri"]
 was_playing = zone.group.coordinator.get_current_transport_info()['current_transport_state'] == "PLAYING"
 zone.group.coordinator.play_uri("http://"+ip+":8318/.lyd.wav")
-zone.volume = 75
+zone.volume = volume
 
 # Wait some seconds and revert state of player into previous state
 time.sleep(recording_length)
