@@ -52,11 +52,30 @@ print(i_to_c(len(zones))+":   Ikke spill av likevel")
 zones.append(dummy_zone())
 zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
 old_vol = zone.volume
-zone.volume = 85
-zone.play_uri("http://"+ip+":8318/.lyd.wav")
+track_info = zone.group.coordinator.get_current_track_info()
+queue_index = int(track_info["playlist_position"]) - 1
+pos = track_info["position"]
+old_uri = track_info["uri"]
+was_playing = zone.group.coordinator.get_current_transport_info()['current_transport_state'] == "PLAYING"
+zone.group.coordinator.play_uri("http://"+ip+":8318/.lyd.wav")
+zone.volume = 75
 
-# Wait some seconds and terminate webserver
-time.sleep(recording_length+2)
+# Wait some seconds and revert state of player into previous state
+time.sleep(recording_length)
 zone.volume = old_vol
+if 'queue_index' in globals():
+    try:
+        zone.group.coordinator.play_from_queue(queue_index)
+        zone.group.coordinator.seek(pos)
+    except soco.exceptions.SoCoUPnPException:
+        try:
+            zone.group.coordinator.play_uri(old_uri)
+        except soco.exceptions.SoCoUPnPException:
+            pass
+    if not was_playing:
+        try:
+            zone.group.coordinator.pause()
+        except soco.exceptions.SoCoUPnPException:
+            pass
 server_proc.terminate()
 os.remove(".lyd.wav")
