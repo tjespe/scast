@@ -1,6 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import soco, os, sys, subprocess, socket, http, time, shutil, string
+import os, sys, subprocess, socket, http, time, shutil, string
+
+try:
+    import soco
+except ModuleNotFoundError:
+    if input("You need the SoCo module to run this script. Do you want to attempt automatic installation?  [y/N]: ").lower() == "y":
+        if shutil.which("pip3"):
+            os.system("sudo pip3 install soco")
+            import soco
+        else:
+            from platform import system
+            if system() == "Darwin":
+                if shutil.which("brew"):
+                    os.system("brew install python3")
+                else:
+                    os.system('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"')
+                    os.system("brew install python3")
+                    os.system("sudo pip3 install soco")
+                    import soco
+            else:
+                print("Sorry, no automatic installation is configured for your system. Please try to install pip3 and then type `sudo pip3 install soco`")
+                quit()
+
 
 def clear():
     os.system("clear")
@@ -21,8 +43,21 @@ elif shutil.which("sox"):
     rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
     volume = 70
 else:
-    print("You need to install either arecord or sox to use this program.")
-    quit()
+    if input("You need to install either arecord or sox to use this program. Do you want to attempt automatic installation? [y/N]: ").lower() == "y":
+        from platform import system
+        if system() == "Darwin":
+            if shutil.which("brew"):
+                os.system("brew install sox")
+            else:
+                os.system('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"')
+                os.system("brew install sox")
+            rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
+            volume = 70
+        else:
+            print("No automatic installation is configured for your system. If you are on Linux and have apt installed you can try to type `sudo apt install arecord`")
+            quit()
+    else:
+        quit()
 input("Trykk ENTER når du er ferdig å ta opp lyd")
 recording_length = time.time() - start
 rec_proc.terminate()
@@ -44,39 +79,34 @@ zones = []
 for i, zone in enumerate(soco.discover()):
     zones.append(zone)
     print(i_to_c(i)+":  ", zone.player_name)
-class dummy_zone():
-    def play_uri(a,b):
-        server_proc.terminate()
-        os.remove(".lyd.wav")
-        quit()
-    volume = 0
 print(i_to_c(len(zones))+":   Ikke spill av likevel")
-zones.append(dummy_zone())
-zone = zones[c_to_i(input("\nSkriv bokstaven til ønsket sone: "))]
-old_vol = zone.volume
-track_info = zone.group.coordinator.get_current_track_info()
-queue_index = int(track_info["playlist_position"]) - 1
-pos = track_info["position"]
-old_uri = track_info["uri"]
-was_playing = zone.group.coordinator.get_current_transport_info()['current_transport_state'] == "PLAYING"
-zone.group.coordinator.play_uri("http://"+ip+":8318/.lyd.wav")
-zone.volume = volume
+i = c_to_i(input("\nSkriv bokstaven til ønsket sone: "))
+if len(zones) > i: # Make sure user did not change their mind
+    zone = zones[i]
+    old_vol = zone.volume
+    track_info = zone.group.coordinator.get_current_track_info()
+    queue_index = int(track_info["playlist_position"]) - 1
+    pos = track_info["position"]
+    old_uri = track_info["uri"]
+    was_playing = zone.group.coordinator.get_current_transport_info()['current_transport_state'] == "PLAYING"
+    zone.group.coordinator.play_uri("http://"+ip+":8318/.lyd.wav")
+    zone.volume = volume
 
-# Wait some seconds and revert state of player into previous state
-time.sleep(recording_length)
-zone.volume = old_vol
-try:
-    zone.group.coordinator.play_from_queue(queue_index)
-    zone.group.coordinator.seek(pos)
-except soco.exceptions.SoCoUPnPException:
+    # Wait some seconds and revert state of player into previous state
+    time.sleep(recording_length)
+    zone.volume = old_vol
     try:
-        zone.group.coordinator.play_uri(old_uri)
+        zone.group.coordinator.play_from_queue(queue_index)
+        zone.group.coordinator.seek(pos)
     except soco.exceptions.SoCoUPnPException:
-        pass
-if not was_playing:
-    try:
-        zone.group.coordinator.pause()
-    except soco.exceptions.SoCoUPnPException:
-        pass
+        try:
+            zone.group.coordinator.play_uri(old_uri)
+        except soco.exceptions.SoCoUPnPException:
+            pass
+    if not was_playing:
+        try:
+            zone.group.coordinator.pause()
+        except soco.exceptions.SoCoUPnPException:
+            pass
 server_proc.terminate()
 os.remove(".lyd.wav")
