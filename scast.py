@@ -32,7 +32,6 @@ try:
         from urllib import request
         with request.urlopen('https://raw.githubusercontent.com/tjespe/scast/master/scast.py') as response:
            newest_update = response.read().decode("utf-8")
-        print(newest_update)
         if open(__file__, "r").read() != newest_update:
             try:
                 open(__file__, "w").write(newest_update)
