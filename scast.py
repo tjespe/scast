@@ -27,8 +27,10 @@ except ModuleNotFoundError:
         quit()
 
 # Try to update automatically
+newest_update, root_required = "", False
 try:
     def update_script():
+        global newest_update, root_required
         from urllib import request
         with request.urlopen('https://raw.githubusercontent.com/tjespe/scast/master/scast.py') as response:
            newest_update = response.read().decode("utf-8")
@@ -36,9 +38,7 @@ try:
             try:
                 open(__file__, "w").write(newest_update)
             except PermissionError:
-                from pipes import quote
-                print("An update of this script is available. Since administrator priviliges are required to modify this script, please enter your password:")
-                os.system("sudo echo "+quote(newest_update)+" > "+__file__)
+                root_required = True
     import threading
     update_thread = threading.Thread(target=update_script)
     update_thread.start()
@@ -129,3 +129,9 @@ if len(zones) > i: # Make sure user did not change their mind
             pass
 server_proc.terminate()
 os.remove(".lyd.wav")
+if root_required:
+    from pipes import quote
+    from getpass import getpass
+    password = getpass("\nAn update of this script is available. Since administrator priviliges are required to modify this script, please enter your password: ")
+    command = "echo "+quote(newest_update)+" |sudo tee "+quote(__file__)
+    os.system('echo %s|sudo -S %s' % (password, command))
