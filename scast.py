@@ -32,7 +32,7 @@ try:
     def update_script():
         global newest_update, root_required
         from urllib import request
-        with request.urlopen('https://raw.githubusercontent.com/tjespe/scast/master/scast.py') as response:
+        with request.urlopen('https://raw.githubusercontent.com/tjespe/scast/master/scast.py?time='+str(int(time.time()))) as response:
            newest_update = response.read().decode("utf-8")
         if open(__file__, "r").read() != newest_update:
             try:
