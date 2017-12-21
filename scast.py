@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, sys, subprocess, socket, http, time, shutil, string
 
+# Try to import SoCo and offer auto installation if it is unavailable
 try:
     import soco
 except ModuleNotFoundError:
@@ -22,11 +23,12 @@ except ModuleNotFoundError:
             else:
                 print("Sorry, no automatic installation is configured for your system. Please try to install pip3 and then type `sudo pip3 install soco`")
                 quit()
+    else:
+        quit()
 
 
 def clear():
     os.system("clear")
-
 def i_to_c(i):
     return string.ascii_uppercase[i]
 def c_to_i(c):
@@ -61,7 +63,6 @@ else:
 input("Trykk ENTER når du er ferdig å ta opp lyd")
 recording_length = time.time() - start
 rec_proc.terminate()
-print("Done!")
 
 # Start webserver
 server_proc = subprocess.Popen(["python3", "-m", "http.server", "8318"], stdout=open("/dev/null"), stderr=open("/dev/null"))
