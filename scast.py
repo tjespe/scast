@@ -133,5 +133,5 @@ if root_required:
     from pipes import quote
     from getpass import getpass
     password = getpass("\nAn update of this script is available. Since administrator priviliges are required to modify this script, please enter your password: ")
-    command = "echo "+quote(newest_update)+" |sudo tee "+quote(__file__)
-    os.system('echo %s|sudo -S %s' % (password, command))
+    command = "echo "+quote(newest_update.rstrip())+" |sudo tee "+quote(__file__)+" > /dev/null"
+    os.system("echo %s|sudo -S %s" % (password, command))
