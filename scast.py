@@ -75,13 +75,13 @@ s.close()
 
 # Play on Sonos zone selected by user
 clear()
-print("Hvilken sone vil du spille lyden på?\n")
+print("In which zone do you wish to play the recording?\n")
 zones = []
 for i, zone in enumerate(soco.discover()):
     zones.append(zone)
     print(i_to_c(i)+":  ", zone.player_name)
-print(i_to_c(len(zones))+":   Ikke spill av likevel")
-i = c_to_i(input("\nSkriv bokstaven til ønsket sone: "))
+print(i_to_c(len(zones))+":   Don't play it")
+i = c_to_i(input("\nWrite the letter of the zone: "))
 if len(zones) > i: # Make sure user did not change their mind
     zone = zones[i]
     old_vol = zone.volume
