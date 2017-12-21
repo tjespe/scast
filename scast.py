@@ -78,7 +78,7 @@ else:
             quit()
     else:
         quit()
-input("Trykk ENTER når du er ferdig å ta opp lyd")
+input("Press the ENTER key when you are done recording")
 recording_length = time.time() - start
 rec_proc.terminate()
 
