@@ -26,6 +26,25 @@ except ModuleNotFoundError:
     else:
         quit()
 
+# Try to update automatically
+try:
+    def update_script():
+        from urllib import request
+        with request.urlopen('https://raw.githubusercontent.com/tjespe/scast/master/scast.py') as response:
+           newest_update = response.read().decode("utf-8")
+        print(newest_update)
+        if open(__file__, "r").read() != newest_update:
+            try:
+                open(__file__, "w").write(newest_update)
+            except PermissionError:
+                from pipes import quote
+                print("An update of this script is available. Since administrator priviliges are required to modify this script, please enter your password:")
+                os.system("sudo echo "+quote(newest_update)+" > "+__file__)
+    import threading
+    update_thread = threading.Thread(target=update_script)
+    update_thread.start()
+except:
+    pass # Fail silently
 
 def clear():
     os.system("clear")
