@@ -21,7 +21,7 @@ except ModuleNotFoundError:
                     os.system("sudo pip3 install soco")
                     import soco
             else:
-                print("Sorry, no automatic installation is configured for your system. Please try to install pip3 and then type `sudo pip3 install soco`")
+                print("\n\nSorry, no automatic installation is configured for your system. Please try to install pip3 and then type `sudo pip3 install soco`")
                 quit()
     else:
         quit()
@@ -45,15 +45,12 @@ try:
 except:
     pass # Fail silently
 
-def clear():
-    os.system("clear")
 def i_to_c(i):
     return string.ascii_uppercase[i]
 def c_to_i(c):
     return (c in string.ascii_uppercase and string.ascii_uppercase.index(c)) or (c in string.ascii_lowercase and string.ascii_lowercase.index(c)) or 0
 
 # Clear terminal and start clock
-clear()
 start = time.time()
 # Record voice
 if shutil.which("arecord"):
@@ -63,7 +60,7 @@ elif shutil.which("sox"):
     rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
     volume = 70
 else:
-    if input("You need to install either arecord or sox to use this program. Do you want to attempt automatic installation? [y/N]: ").lower() == "y":
+    if input("\n\nYou need to install either arecord or sox to use this program. Do you want to attempt automatic installation? [y/N]: ").lower() == "y":
         from platform import system
         if system() == "Darwin":
             if shutil.which("brew"):
@@ -74,11 +71,11 @@ else:
             rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
             volume = 70
         else:
-            print("No automatic installation is configured for your system. If you are on Linux and have apt installed you can try to type `sudo apt install arecord`")
+            print("\n\nNo automatic installation is configured for your system. If you are on Linux and have apt installed you can try to type `sudo apt install arecord`")
             quit()
     else:
         quit()
-input("Press the ENTER key when you are done recording")
+input("\n\nPress the ENTER key when you are done recording")
 recording_length = time.time() - start
 rec_proc.terminate()
 
@@ -92,8 +89,7 @@ ip = s.getsockname()[0]
 s.close()
 
 # Play on Sonos zone selected by user
-clear()
-print("In which zone do you wish to play the recording?\n")
+print("\n\nIn which zone do you wish to play the recording?\n")
 zones = []
 for i, zone in enumerate(soco.discover()):
     zones.append(zone)
