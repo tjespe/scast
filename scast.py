@@ -20,6 +20,8 @@ except ModuleNotFoundError:
                     os.system("brew install python3")
                     os.system("sudo pip3 install soco")
                     import soco
+            elif shutil.which("apt"):
+                os.system("apt install python3-pip")
             else:
                 print("\n\nSorry, no automatic installation is configured for your system. Please try to install pip3 and then type `sudo pip3 install soco`")
                 quit()
