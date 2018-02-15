@@ -70,9 +70,9 @@ if get_param_val("f"): # Audio file is specified as command line option
         copy(get_param_val("f"), ".lyd.wav")
     else:
         if shutil.which("ffmpeg"):
-            print("Converting file…")
+            print("Converting file...")
             subprocess.run(["ffmpeg", "-i", get_param_val("f"), ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
-            print("Playing file…")
+            print("Playing file...")
         else:
             print("The file you specified was not a .wav file and this script did not find ffmpeg installed. Either use a .wav file or install ffmpeg.")
             quit(1)
