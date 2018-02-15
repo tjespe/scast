@@ -148,7 +148,8 @@ for i, zone in enumerate(target_zones):
     zone.volume = volume
 
 # Wait the appropriate amount of seconds
-time.sleep(recording_length)
+if len(target_zones):
+    time.sleep(recording_length)
 
 # Revert each zone back to previous state
 for i, zone in enumerate(target_zones):
