@@ -171,7 +171,7 @@ for i, zone in enumerate(target_zones):
 
 # Stop server and delete sound file
 server_proc.terminate()
-os.remove(".lyd.wav")
+#os.remove(".lyd.wav")
 
 # Prompt for password to update this script if necessary
 if root_required:
