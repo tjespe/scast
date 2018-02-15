@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 import os, sys, subprocess, socket, http, time, shutil, string
 
+def param_present(x):
+    return "-"+x in sys.argv
+
+def get_param_val(x, fallback=None):
+    return fallback if not "-"+x in sys.argv or len(sys.argv) <= sys.argv.index("-"+x) + 1 else sys.argv[sys.argv.index("-"+x) + 1]
+
 # Try to import SoCo and offer auto installation if it is unavailable
 try:
     import soco
@@ -31,19 +37,20 @@ except ModuleNotFoundError:
 # Try to update automatically
 newest_update, root_required = "", False
 try:
-    def update_script():
-        global newest_update, root_required
-        from urllib import request
-        with request.urlopen('https://raw.githubusercontent.com/tjespe/scast/master/scast.py?time='+str(int(time.time()))) as response:
-           newest_update = response.read().decode("utf-8")
-        if open(__file__, "r").read() != newest_update:
-            try:
-                open(__file__, "w").write(newest_update)
-            except PermissionError:
-                root_required = True
-    import threading
-    update_thread = threading.Thread(target=update_script)
-    update_thread.start()
+    if not param_present("-no-update"): # Command line flag --no-update can be used to prevent auto update
+        def update_script():
+            global newest_update, root_required
+            from urllib import request
+            with request.urlopen('https://raw.githubusercontent.com/tjespe/scast/master/scast.py?time='+str(int(time.time()))) as response:
+               newest_update = response.read().decode("utf-8")
+            if open(__file__, "r").read() != newest_update:
+                try:
+                    open(__file__, "w").write(newest_update)
+                except PermissionError:
+                    root_required = True
+        import threading
+        update_thread = threading.Thread(target=update_script)
+        update_thread.start()
 except:
     pass # Fail silently
 
@@ -52,7 +59,7 @@ def i_to_c(i):
 def c_to_i(c):
     return (c in string.ascii_uppercase and string.ascii_uppercase.index(c)) or (c in string.ascii_lowercase and string.ascii_lowercase.index(c)) or 0
 
-# Clear terminal and start clock
+# Start clock
 start = time.time()
 # Record voice
 if shutil.which("arecord"):
@@ -90,43 +97,63 @@ s.connect(("8.8.8.8", 80))
 ip = s.getsockname()[0]
 s.close()
 
-# Play on Sonos zone selected by user
-print("\n\nIn which zone do you wish to play the recording?\n")
-zones = []
-for i, zone in enumerate(soco.discover()):
-    zones.append(zone)
-    print(i_to_c(i)+":  ", zone.player_name)
-print(i_to_c(len(zones))+":   Don't play it")
-i = c_to_i(input("\nWrite the letter of the zone: "))
-if len(zones) > i: # Make sure user did not change their mind
-    zone = zones[i]
-    old_vol = zone.volume
-    track_info = zone.group.coordinator.get_current_track_info()
-    queue_index = int(track_info["playlist_position"]) - 1
-    pos = track_info["position"]
-    old_uri = track_info["uri"]
-    was_playing = zone.group.coordinator.get_current_transport_info()['current_transport_state'] == "PLAYING"
+# Play on Sonos zone(s) selected by user
+target_zones = []
+zones_data = []
+if not get_param_val("z"):
+    print("\n\nIn which zone do you wish to play the recording?\n")
+    zones = []
+    for i, zone in enumerate(soco.discover()):
+        zones.append(zone)
+        print(i_to_c(i)+":  ", zone.player_name)
+    print(i_to_c(len(zones))+":   Don't play it")
+    i = c_to_i(input("\nWrite the letter of the zone: "))
+    if len(zones) > i: # Make sure user did not change their mind
+        target_zones.append(zones[i])
+        zones_data.append({})
+else:
+    for i, zone in enumerate(soco.discover()):
+        if get_param_val("z") == "all" or zone.player_name == get_param_val("z"):
+            target_zones.append(zone)
+            zones_data.append({})
+
+# Loop through target zones, save state and play sound
+for i, zone in enumerate(target_zones):
+    zones_data[i]["vol"] = zone.volume
+    zones_data[i]["track_info"] = zone.group.coordinator.get_current_track_info()
+    zones_data[i]["queue_index"] = int(zones_data[i]["track_info"]["playlist_position"]) - 1
+    zones_data[i]["pos"] = zones_data[i]["track_info"]["position"]
+    zones_data[i]["uri"] = zones_data[i]["track_info"]["uri"]
+    zones_data[i]["was_playing"] = zone.group.coordinator.get_current_transport_info()['current_transport_state'] == "PLAYING"
     zone.group.coordinator.play_uri("http://"+ip+":8318/.lyd.wav")
     zone.volume = volume
 
-    # Wait some seconds and revert state of player into previous state
-    time.sleep(recording_length)
-    zone.volume = old_vol
+# Wait the appropriate amount of seconds
+time.sleep(recording_length)
+
+# Revert each zone back to previous state
+for i, zone in enumerate(target_zones):
+    zone.volume = zones_data[i]["vol"]
     try:
-        zone.group.coordinator.play_from_queue(queue_index)
-        zone.group.coordinator.seek(pos)
+        # zone.group.coordinator.play_from_queue(queue_index)
+        zone.group.coordinator.play_from_queue(zones_data[i]["queue_index"])
+        zone.group.coordinator.seek(zones_data[i]["pos"])
     except soco.exceptions.SoCoUPnPException:
         try:
-            zone.group.coordinator.play_uri(old_uri)
+            zone.group.coordinator.play_uri(zones_data[i]["uri"])
         except soco.exceptions.SoCoUPnPException:
             pass
-    if not was_playing:
+    if not zones_data[i]["was_playing"]:
         try:
             zone.group.coordinator.pause()
         except soco.exceptions.SoCoUPnPException:
             pass
+
+# Stop server and delete sound file
 server_proc.terminate()
 os.remove(".lyd.wav")
+
+# Prompt for password to update this script if necessary
 if root_required:
     from pipes import quote
     from getpass import getpass
