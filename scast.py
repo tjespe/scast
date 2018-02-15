@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os, sys, subprocess, socket, http, time, shutil, string
+from shutil import copy2 as copy
 
 def param_present(x):
     return "-"+x in sys.argv
@@ -59,34 +60,52 @@ def i_to_c(i):
 def c_to_i(c):
     return (c in string.ascii_uppercase and string.ascii_uppercase.index(c)) or (c in string.ascii_lowercase and string.ascii_lowercase.index(c)) or 0
 
-# Start clock
-start = time.time()
-# Record voice
-if shutil.which("arecord"):
-    rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open(".lyd.wav", "w"), stderr=open("/dev/null"))
-    volume = 35
-elif shutil.which("sox"):
-    rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
-    volume = 70
-else:
-    if input("\n\nYou need to install either arecord or sox to use this program. Do you want to attempt automatic installation? [y/N]: ").lower() == "y":
-        from platform import system
-        if system() == "Darwin":
-            if shutil.which("brew"):
-                os.system("brew install sox")
-            else:
-                os.system('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"')
-                os.system("brew install sox")
-            rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
-            volume = 70
-        else:
-            print("\n\nNo automatic installation is configured for your system. If you are on Linux and have apt installed you can try to type `sudo apt install arecord`")
-            quit()
+if get_param_val("f"): # Audio file is specified as command line option
+    if get_param_val("l"):
+        recording_length = int(get_param_val("l"))
     else:
-        quit()
-input("\n\nPress the ENTER key when you are done recording")
-recording_length = time.time() - start
-rec_proc.terminate()
+        print("Since you did not specify length on the command line (using -l option) the file will be played for 10 seconds")
+        recording_length = 10
+    if get_param_val("f").endswith(".wav"):
+        copy(get_param_val("f"), ".lyd.wav")
+    else:
+        if shutil.which("ffmpeg"):
+            print("Converting file…")
+            subprocess.run(["ffmpeg", "-i", get_param_val("f"), ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
+            print("Playing file…")
+        else:
+            print("The file you specified was not a .wav file and this script did not find ffmpeg installed. Either use a .wav file or install ffmpeg.")
+            quit(1)
+    volume = int(get_param_val("v")) if get_param_val("v") else 60
+else:
+    # Start clock
+    start = time.time()
+    # Record voice
+    if shutil.which("arecord"):
+        rec_proc = subprocess.Popen(["arecord", "-f", "cd"], stdout=open(".lyd.wav", "w"), stderr=open("/dev/null"))
+        volume = 35
+    elif shutil.which("sox"):
+        rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
+        volume = 70
+    else:
+        if input("\n\nYou need to install either arecord or sox to use this program interactively. Do you want to attempt automatic installation? [y/N]: ").lower() == "y":
+            from platform import system
+            if system() == "Darwin":
+                if shutil.which("brew"):
+                    os.system("brew install sox")
+                else:
+                    os.system('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"')
+                    os.system("brew install sox")
+                rec_proc = subprocess.Popen(["sox", "-e", "u-law", "-d", ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
+                volume = 70
+            else:
+                print("\n\nNo automatic installation is configured for your system. If you are on Linux and have apt installed you can try to type `sudo apt install arecord`")
+                quit()
+        else:
+            quit()
+    input("Press the ENTER key when you are done recording")
+    recording_length = time.time() - start
+    rec_proc.terminate()
 
 # Start webserver
 server_proc = subprocess.Popen(["python3", "-m", "http.server", "8318"], stdout=open("/dev/null"), stderr=open("/dev/null"))
