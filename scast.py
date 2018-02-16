@@ -70,9 +70,12 @@ if get_param_val("f"): # Audio file is specified as command line option
         copy(get_param_val("f"), ".lyd.wav")
     else:
         if shutil.which("ffmpeg"):
-            print("Converting file...")
-            subprocess.run(["ffmpeg", "-i", get_param_val("f"), ".lyd.wav"], stdout=open("/dev/null"), stderr=open("/dev/null"))
-            print("Playing file...")
+            if param_present("-debug"):
+                print("Converting file...")
+            conv_proc = subprocess.run(["ffmpeg", "-i", get_param_val("f"), ".lyd.wav"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if param_present("-debug"):
+                print(conv_proc.stdout.decode(), conv_proc.stderr.decode())
+                print("Playing file...")
         else:
             print("The file you specified was not a .wav file and this script did not find ffmpeg installed. Either use a .wav file or install ffmpeg.")
             quit(1)
@@ -175,8 +178,12 @@ os.remove(".lyd.wav")
 
 # Prompt for password to update this script if necessary
 if root_required:
-    from pipes import quote
-    from getpass import getpass
-    password = getpass("\nAn update of this script is available. Since administrator priviliges are required to modify this script, please enter your password: ")
-    command = "echo "+quote(newest_update.rstrip())+" |sudo tee "+quote(__file__)+" > /dev/null"
-    os.system("echo %s|sudo -S %s" % (password, command))
+    try:
+        from pipes import quote
+        from getpass import getpass
+        password = getpass("\nAn update of this script is available. Since administrator priviliges are required to modify this script, please enter your password: ")
+        command = "echo "+quote(newest_update.rstrip())+" |sudo tee "+quote(__file__)+" > /dev/null"
+        os.system("echo %s|sudo -S %s" % (password, command))
+    except Exception as e:
+        if param_present("-debug"):
+            print(e)
