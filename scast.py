@@ -72,7 +72,7 @@ if get_param_val("f"): # Audio file is specified as command line option
         if shutil.which("ffmpeg"):
             if param_present("-debug"):
                 print("Converting file...")
-            conv_proc = subprocess.run(["ffmpeg", "-i", get_param_val("f"), ".lyd.wav"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            conv_proc = subprocess.run(["ffmpeg", "-y", "-i", get_param_val("f"), ".lyd.wav"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if param_present("-debug"):
                 print(conv_proc.stdout.decode(), conv_proc.stderr.decode())
                 print("Playing file...")
