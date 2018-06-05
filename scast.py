@@ -127,7 +127,7 @@ if not get_param_val("z"):
     zones = []
     for i, zone in enumerate(soco.discover()):
         zones.append(zone)
-        print(i_to_c(i)+":  ", zone.player_name)
+        print(u':   '.join((i_to_c(i), zone.player_name)))
     print(i_to_c(len(zones))+":   Don't play it")
     i = c_to_i(input("\nWrite the letter of the zone: "))
     if len(zones) > i: # Make sure user did not change their mind
