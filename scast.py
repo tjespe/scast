@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os, sys, subprocess, socket, http, time, shutil, string
-from shutil import copy2 as copy
+from shutil import copy2 as copy, SameFileError
 
 def param_present(x):
     return "-"+x in sys.argv
@@ -67,7 +67,10 @@ if get_param_val("f"): # Audio file is specified as command line option
         print("Since you did not specify length on the command line (using -l option) the file will be played for 10 seconds")
         recording_length = 10
     if get_param_val("f").endswith(".wav"):
-        copy(get_param_val("f"), ".lyd.wav")
+        try:
+            copy(get_param_val("f"), ".lyd.wav")
+        except SameFileError:
+            print("already in place")
     else:
         if shutil.which("ffmpeg"):
             if param_present("-debug"):
